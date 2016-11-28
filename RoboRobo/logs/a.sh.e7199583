@@ -1,0 +1,6 @@
+/home/haasdijk/monee/results/analyse.sh: line 26: pushd: /home/haasdijk/monee/selective-pressure/MONEE/lifeTime.2000: No such file or directory
+/home/haasdijk/monee/results/analyse.sh: line 34: popd: directory stack empty
+bzcat: Can't open input file output.*.log.bz2: No such file or directory.
+bzcat: Can't open input file *.cout.bz2: No such file or directory.
+bzip2: Can't open input file *.cout.bz2: No such file or directory.
+bzip2: Can't open input file *.cout.bz2: No such file or directory.
