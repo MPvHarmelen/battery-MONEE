@@ -16,12 +16,16 @@ class SimpleShellsAgentWorldModel : public RobotAgentWorldModel {
         std::vector<int>* _puckCounters;
         std::vector<Genome> _genePool;
 
+        // added by Verna
+        int _batterylevel;
+        int _charginglevel;
+
         int _lifetime[2];
         int _phase;
         int _action;
         double _speedPenalty;
         double _specialisation;
-        
+
         Uint32 _winnerId;
 
 		SimpleShellsAgentWorldModel();
