@@ -17,8 +17,9 @@ class SimpleShellsAgentWorldModel : public RobotAgentWorldModel {
         std::vector<Genome> _genePool;
 
         // added by Verna
-        int _batterylevel;
-        int _charginglevel;
+        int _batteryLevel;
+        int _chargingTime;
+        int _depletionTime;
 
         int _lifetime[2];
         int _phase;
