@@ -14,7 +14,7 @@ std::vector<Genome>::const_iterator SimpleShellsControlArchitecture::selectWeigh
     	return genomes.begin();
     // else
 
-    if (_randomSelection) 
+    if (_randomSelection)
     {
       std::cout  << "Iteration: " << gWorld->getIterations() << "; Size: " << genomes.size() << std::endl;
       return genomes.begin() + Rand::randint(0, genomes.size());
@@ -65,7 +65,7 @@ std::vector<Genome>::const_iterator SimpleShellsControlArchitecture::selectWeigh
 }
 
 void mutate(std::vector<double> & parameters, double delta) {
-    for (std::vector<double>::iterator it = parameters.begin(); it < parameters.end(); it++) 
+    for (std::vector<double>::iterator it = parameters.begin(); it < parameters.end(); it++)
     {
         //*it += (ranf() - 0.5) * delta;
         *it += Rand::gaussianf(0.0, delta);
@@ -86,7 +86,7 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
     _maxLifetime[PHASE_MATING] = tmpInt;
     gProperties.checkAndGetPropertyValue("gHiddenNeuronCount", &tmpInt, true);
     _hiddenNeuronCount = tmpInt;
-    
+
     _randomSelection = false;
     gProperties.checkAndGetPropertyValue("gRandomSelection", &_randomSelection, false);
     _useMarket = true;
@@ -97,7 +97,7 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
     gProperties.checkAndGetPropertyValue("gTask1Premium", &_task1Premium, 1.0);
     _selectionPressure = 1.5;
     gProperties.checkAndGetPropertyValue("gSelectionPressure", &_selectionPressure, 1.5);
-    
+
     if (_hiddenNeuronCount > 0) {
         _parameterCount = (_wm->_sensorCount * (gPuckColors + 1) + 1 + 2) * _hiddenNeuronCount + (_hiddenNeuronCount + 1) * 2;
         _response.assign(_hiddenNeuronCount, .0);
@@ -111,6 +111,10 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
 
     _activeGenome.parameters.assign(_parameterCount, .0);
     mutate(_activeGenome.parameters, 1.0);
+
+    _wm->_batteryLevel = 100;
+    _wm->_chargingTime = 10;
+    _wm->_depletionTime = 90;
 
     _wm->_puckCounters = &(_activeGenome.pucks);
 }
@@ -179,7 +183,7 @@ void SimpleShellsControlArchitecture::assignFitness(std::vector<Genome> & genome
         for (int i = 0; i < gPuckColors; i++) puckTotals[i] += itGenome->pucks[i];
     }
     // Count the cumulative total
-    for (int i = 0; i < gPuckColors; i++) 
+    for (int i = 0; i < gPuckColors; i++)
     {
         cumTotal += puckTotals[i];
 std::cout << puckTotals[i] << ' ';
@@ -283,9 +287,9 @@ void SimpleShellsControlArchitecture::updateGenomes() {
 void SimpleShellsControlArchitecture::updateActuators() {
     std::vector<double> & parameters = _activeGenome.parameters;
     int geneToUse = 0;
-    
+
     double trans = .0, rotor = .0;
-    
+
     if (_hiddenNeuronCount > 0) {
         // Calculating response of the hidden layer.
         // Initiate with biases.
@@ -315,7 +319,7 @@ void SimpleShellsControlArchitecture::updateActuators() {
         for (int n = 0; n < _hiddenNeuronCount; n++) {
             _response[n] = tanh(_response[n]);
         }
-        
+
         for (int n = 0; n < _hiddenNeuronCount; n++) {
             trans += _response[n] * parameters[geneToUse++];
             rotor += _response[n] * parameters[geneToUse++];
@@ -389,7 +393,27 @@ void SimpleShellsControlArchitecture::step() {
                 _wm->advance();
                 break;
             case ACTION_GATHER :
-                updateActuators();
+                if (_wm->_depletionTime == 0) {
+                    // when charging, don't move
+                    _wm->_desiredTranslationalValue = 0;
+                    _wm->_desiredRotationalVelocity = 0;
+                    _wm->setRobotLED_colorValues(0, 255, 0);
+                    if (_wm->_chargingTime == 0) {
+                        // when finished charging
+                        _wm->_batteryLevel = 100;
+                        _wm->_chargingTime = 10;
+                        _wm->_depletionTime = 90;
+                        // _wm->_depletionTime = *(_activeGenome.parameters.end() - 1)
+                    } else {
+                        _wm->_chargingTime = _wm->_chargingTime - 1;
+                    }
+                } else {
+                    _wm->_batteryLevel--;
+                    _wm->_depletionTime--;
+                    updateActuators();
+                    _wm->setRobotLED_colorValues(34, 139, 34);
+                }
+
                 _wm->advance();
                 // Last turn of gathering can't be combined with the braking turn.
                 done = true;
@@ -410,10 +434,10 @@ void SimpleShellsControlArchitecture::step() {
     }
     if (gWorld->getIterations() % 10 == 0)
     {
-        double dx = _activeGenome._lastXPos - _wm->getXReal(); 
-        double dy = _activeGenome._lastYPos - _wm->getYReal(); 
+        double dx = _activeGenome._lastXPos - _wm->getXReal();
+        double dy = _activeGenome._lastYPos - _wm->getYReal();
         _activeGenome._distance += sqrt(dx*dx + dy*dy);
-        _activeGenome._lastXPos = _wm->getXReal(); 
+        _activeGenome._lastXPos = _wm->getXReal();
         _activeGenome._lastYPos = _wm->getYReal();
     }
 }
