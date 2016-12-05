@@ -97,12 +97,13 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
     gProperties.checkAndGetPropertyValue("gTask1Premium", &_task1Premium, 1.0);
     _selectionPressure = 1.5;
     gProperties.checkAndGetPropertyValue("gSelectionPressure", &_selectionPressure, 1.5);
-
+    
+    int batteryGeneCount = 1;
     if (_hiddenNeuronCount > 0) {
-        _parameterCount = (_wm->_sensorCount * (gPuckColors + 1) + 1 + 2) * _hiddenNeuronCount + (_hiddenNeuronCount + 1) * 2;
+        _parameterCount = (_wm->_sensorCount * (gPuckColors + 1) + 1 + 2) * _hiddenNeuronCount + (_hiddenNeuronCount + 1) * 2 + batteryGeneCount;
         _response.assign(_hiddenNeuronCount, .0);
     } else {
-        _parameterCount = (_wm->_sensorCount * (gPuckColors + 1) + 1 + 2) * 2;
+        _parameterCount = (_wm->_sensorCount * (gPuckColors + 1) + 1 + 2) * 2 + batteryGeneCount;
     }
 
     _wm->_genePool.reserve(gMaxGenePool);
