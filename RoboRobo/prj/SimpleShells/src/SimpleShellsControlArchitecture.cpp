@@ -394,7 +394,7 @@ void SimpleShellsControlArchitecture::step() {
                 _wm->advance();
                 break;
             case ACTION_GATHER :
-                if (_wm->_depletionTime == 0) {
+                if (_wm->_depletionTime <= 0) {
                     // when charging, don't move
                     _wm->_desiredTranslationalValue = 0;
                     _wm->_desiredRotationalVelocity = 0;
@@ -403,8 +403,11 @@ void SimpleShellsControlArchitecture::step() {
                         // when finished charging
                         _wm->_batteryLevel = 100;
                         _wm->_chargingTime = 10;
-                        _wm->_depletionTime = 90;
-                        // _wm->_depletionTime = *(_activeGenome.parameters.end() - 1)
+                        // _wm->_depletionTime = 90;
+                        _wm->_depletionTime = (int) *(_activeGenome.parameters.end() - 1);
+                        std::cout.precision(4);
+                        std::cout << "Depletion time: " << std::fixed << *(_activeGenome.parameters.end() - 1);
+                        std::cout << std::endl;
                     } else {
                         _wm->_chargingTime = _wm->_chargingTime - 1;
                     }
