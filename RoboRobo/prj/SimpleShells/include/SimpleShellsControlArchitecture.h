@@ -33,6 +33,7 @@ class SimpleShellsControlArchitecture : public BehaviorControlArchitecture {
 
         int _chargedBatteryLevel;
         int _fixedChargingTime;
+        double _depletionTimeFactor;
 
         std::vector<double> _response;
 

@@ -97,7 +97,12 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
     gProperties.checkAndGetPropertyValue("gTask1Premium", &_task1Premium, 1.0);
     _selectionPressure = 1.5;
     gProperties.checkAndGetPropertyValue("gSelectionPressure", &_selectionPressure, 1.5);
-    
+
+    // Settings added by Martin
+    gProperties.checkAndGetPropertyValue("gDepletionTimeFactor", &_depletionTimeFactor, 1);
+    gProperties.checkAndGetPropertyValue("gChargedBatteryLevel", &_chargedBatteryLevel, 80);
+    gProperties.checkAndGetPropertyValue("gFixedChargingTime", &_fixedChargingTime, 30);
+
     int batteryGeneCount = 1;
     if (_hiddenNeuronCount > 0) {
         _parameterCount = (_wm->_sensorCount * (gPuckColors + 1) + 1 + 2) * _hiddenNeuronCount + (_hiddenNeuronCount + 1) * 2 + batteryGeneCount;
@@ -115,7 +120,7 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
 
     _wm->_batteryLevel = _chargedBatteryLevel;
     _wm->_chargingTime = _fixedChargingTime;
-    _wm->setDepletionTime(_activeGenome);
+    _wm->setDepletionTime(_activeGenome, _depletionTimeFactor);
 
     _wm->_puckCounters = &(_activeGenome.pucks);
 }
@@ -402,7 +407,7 @@ void SimpleShellsControlArchitecture::step() {
                         // when finished charging
                         _wm->_batteryLevel = _chargedBatteryLevel;
                         _wm->_chargingTime = _fixedChargingTime;
-                        _wm->setDepletionTime(_activeGenome);
+                        _wm->setDepletionTime(_activeGenome, _depletionTimeFactor);
                         std::cout << "Depletion time: " << _wm->_depletionTime;
                         std::cout << std::endl;
                     } else {
