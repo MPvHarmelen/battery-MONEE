@@ -53,6 +53,7 @@ class SimpleShellsControlArchitecture : public BehaviorControlArchitecture {
 		void step();
 
         void reset();
+                void resetBattery();
 		void updateActuators();
 		void updateGenomes();
         void select();
