@@ -20,7 +20,7 @@ class SimpleShellsAgentWorldModel : public RobotAgentWorldModel {
         int _batteryLevel;
         int _chargingTime;
         int _depletionTime;
-        double _depletionTimeFactor
+        double _depletionTimeFactor;
 
         int _lifetime[2];
         int _phase;
