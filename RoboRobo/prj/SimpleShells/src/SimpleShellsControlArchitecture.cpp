@@ -130,7 +130,15 @@ SimpleShellsControlArchitecture::~SimpleShellsControlArchitecture() {
 	// nothing to do.
 }
 
+void SimpleShellsControlArchitecture::resetBattery() {
+    _wm->_batteryLevel = _chargedBatteryLevel;
+    _wm->_chargingTime = _fixedChargingTime;
+    _wm->setDepletionTime(_activeGenome, _depletionTimeFactor);
+}
+
 void SimpleShellsControlArchitecture::reset() {
+    resetBattery();
+
     std::cout << "[gathered] " << _wm->_world->getIterations() << ' ' << _activeGenome.id;
     for (std::vector<int>::iterator i = _activeGenome.pucks.begin(); i < _activeGenome.pucks.end(); ++i)
        std::cout << ' ' << *i;
@@ -394,6 +402,8 @@ void SimpleShellsControlArchitecture::step() {
             case ACTION_ACTIVATE :
                 reset();
                 _wm->_phase = PHASE_GATHERING;
+                std::cout << "Depletion time: " << _wm->_depletionTime;
+                std::cout << std::endl;
                 _wm->setRobotLED_colorValues(34, 139, 34);
                 _wm->advance();
                 break;
@@ -405,11 +415,7 @@ void SimpleShellsControlArchitecture::step() {
                     _wm->setRobotLED_colorValues(0, 255, 0);
                     if (_wm->_chargingTime == 0) {
                         // when finished charging
-                        _wm->_batteryLevel = _chargedBatteryLevel;
-                        _wm->_chargingTime = _fixedChargingTime;
-                        _wm->setDepletionTime(_activeGenome, _depletionTimeFactor);
-                        std::cout << "Depletion time: " << _wm->_depletionTime;
-                        std::cout << std::endl;
+                        resetBattery();
                     } else {
                         // Continue charging
                         _wm->_chargingTime--;
