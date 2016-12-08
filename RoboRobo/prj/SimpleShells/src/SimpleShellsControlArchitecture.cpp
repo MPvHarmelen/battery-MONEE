@@ -408,30 +408,33 @@ void SimpleShellsControlArchitecture::step() {
                 _wm->advance();
                 break;
             case ACTION_GATHER :
-                if (_wm->_depletionTime <= 0) {
-                    // when charging, don't move
-                    _wm->_desiredTranslationalValue = 0;
-                    _wm->_desiredRotationalVelocity = 0;
-                    _wm->setRobotLED_colorValues(0, 255, 0);
-                    if (_wm->_chargingTime == 0) {
-                        // when finished charging
-                        resetBattery();
+                if (_wm->_batteryLevel < 0)
+                    // Kill the robot
+                    _wm->_action = ACTION_BRAKE;
+                else {
+                    if (_wm->_depletionTime <= 0) {
+                        // when charging, don't move
+                        _wm->_desiredTranslationalValue = 0;
+                        _wm->_desiredRotationalVelocity = 0;
+                        _wm->setRobotLED_colorValues(0, 255, 0);
+                        if (_wm->_chargingTime > 0)
+                            // Continue charging
+                            _wm->_chargingTime--;
+                        else
+                            // when finished charging
+                            resetBattery();
                     } else {
-                        // Continue charging
-                        _wm->_chargingTime--;
+                        // Continue gathering
+                        _wm->_batteryLevel--;
+                        _wm->_depletionTime--;
+                        updateActuators();
+                        _wm->setRobotLED_colorValues(34, 139, 34);
                     }
-                } else {
-                    // Continue gathering
-                    _wm->_batteryLevel--;
-                    _wm->_depletionTime--;
-                    updateActuators();
-                    _wm->setRobotLED_colorValues(34, 139, 34);
+                    _wm->advance();
+                    // Last turn of gathering can't be combined with the braking turn.
+                    done = true;
+                    break;
                 }
-
-                _wm->advance();
-                // Last turn of gathering can't be combined with the braking turn.
-                done = true;
-                break;
             case ACTION_BRAKE :
                 _wm->_desiredTranslationalValue = 0;
                 _wm->_desiredRotationalVelocity = 0;
