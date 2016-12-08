@@ -20,6 +20,7 @@ class SimpleShellsAgentWorldModel : public RobotAgentWorldModel {
         int _batteryLevel;
         int _chargingTime;
         int _depletionTime;
+        double _depletionTimeFactor
 
         int _lifetime[2];
         int _phase;
@@ -44,6 +45,10 @@ class SimpleShellsAgentWorldModel : public RobotAgentWorldModel {
             if (((_action == ACTION_GATHER) || (_action == ACTION_MATE)) && (--_lifetime[_phase] > 0)) return _lifetime[_phase];
             _action = (_action + 1) % ACTION_SIZE;
             return 0;
+        }
+
+        inline void setDepletionTime(Genome _activeGenome) {
+            _depletionTime = (int) *(_activeGenome.parameters.end() - 1) * _depletionTimeFactor;
         }
 
         void dumpGenePoolStats() const;

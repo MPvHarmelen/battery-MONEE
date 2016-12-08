@@ -113,9 +113,9 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
     _activeGenome.parameters.assign(_parameterCount, .0);
     mutate(_activeGenome.parameters, 1.0);
 
-    _wm->_batteryLevel = 100;
-    _wm->_chargingTime = 10;
-    _wm->_depletionTime = 90;
+    _wm->_batteryLevel = _chargedBatteryLevel;
+    _wm->_chargingTime = _fixedChargingTime;
+    _wm->setDepletionTime(_activeGenome);
 
     _wm->_puckCounters = &(_activeGenome.pucks);
 }
@@ -124,7 +124,6 @@ SimpleShellsControlArchitecture::SimpleShellsControlArchitecture( RobotAgentWorl
 SimpleShellsControlArchitecture::~SimpleShellsControlArchitecture() {
 	// nothing to do.
 }
-
 
 void SimpleShellsControlArchitecture::reset() {
     std::cout << "[gathered] " << _wm->_world->getIterations() << ' ' << _activeGenome.id;
@@ -401,17 +400,17 @@ void SimpleShellsControlArchitecture::step() {
                     _wm->setRobotLED_colorValues(0, 255, 0);
                     if (_wm->_chargingTime == 0) {
                         // when finished charging
-                        _wm->_batteryLevel = 100;
-                        _wm->_chargingTime = 10;
-                        // _wm->_depletionTime = 90;
-                        _wm->_depletionTime = (int) *(_activeGenome.parameters.end() - 1);
-                        std::cout.precision(4);
-                        std::cout << "Depletion time: " << std::fixed << *(_activeGenome.parameters.end() - 1);
+                        _wm->_batteryLevel = _chargedBatteryLevel;
+                        _wm->_chargingTime = _fixedChargingTime;
+                        _wm->setDepletionTime(_activeGenome);
+                        std::cout << "Depletion time: " << _wm->_depletionTime;
                         std::cout << std::endl;
                     } else {
-                        _wm->_chargingTime = _wm->_chargingTime - 1;
+                        // Continue charging
+                        _wm->_chargingTime--;
                     }
                 } else {
+                    // Continue gathering
                     _wm->_batteryLevel--;
                     _wm->_depletionTime--;
                     updateActuators();

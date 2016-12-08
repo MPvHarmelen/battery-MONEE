@@ -31,6 +31,9 @@ class SimpleShellsControlArchitecture : public BehaviorControlArchitecture {
 	double _task1Premium;
         double _selectionPressure;
 
+        int _chargedBatteryLevel;
+        int _fixedChargingTime;
+
         std::vector<double> _response;
 
         void assignFitness(std::vector<Genome> & genomes);
