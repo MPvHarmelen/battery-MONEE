@@ -1,6 +1,6 @@
 WAIT_TIME=1100
 MAIN_DIR=properties
-SKIP=2
+SKIP=4
 PARALLEL=2
 
 for run in {10..16}; do
@@ -10,14 +10,11 @@ for run in {10..16}; do
             SKIP=$((SKIP-1))
             continue
         fi
-        if [[ SKIP -gt -$PARALLEL ]]; then
+        for (( i = 0; i < $PARALLEL; i++ )); do
             echo "Starting run $run $description"
             gnome-terminal --working-directory=$(pwd) -e "../run_once.sh $run $description"
-            SKIP=$((SKIP-1))
-            continue
-        fi
-        # read -p "Hit enter to start run $run $description"
-        echo "Starting run $run $description in $WAIT_TIME seconds"
+        done
+        echo "Waiting $WAIT_TIME seconds"
         sleep $WAIT_TIME
         gnome-terminal --working-directory=$(pwd) -e "../run_once.sh $run $description"
     done
