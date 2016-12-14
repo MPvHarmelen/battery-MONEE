@@ -1,0 +1,105 @@
+
+
+Er lijkt in /home/martin/Documents/repos/battery-MONEE/RoboRobo/src/ext/PerceptronBehaviorControlArchitecture.cpp iets te staan wat iets doet
+
+
+
+Batterij heeft maximale waarde
+elke tijdstap gaat er 1 dingetje af
+als de batterij leeg is, wordt je een ei
+
+er is een oplaadpunt in de ruimte
+zolang je binnen de straal van het oplaadpunt staat, wordt de batterij helemaal vol.
+
+
+
+Hoe werken de scriptjes:
+analyse pipelinev (scripts op github)
+<dirname>/datumaanelkaar___12312/
+    .cout
+    .log
+    .output
+
+roep aan met `analyse.sh <dirname>`
+
+
+
+lichtje
+
+
+
+
+Dan gaan ze dus niet
+
+in genoom
+ - na hoeveel tijdstappen 'ie moet opladen.
+ (- hoe lang 'ie  oplaad)
+
+instellingen:
+ - hoeveel stroom per tijdsstap / stroom na opladen
+ - hoe lang 'ie moet opladen
+
+parameters:
+ - hoe vol 'ie is
+
+counters:
+ - chargingtime
+ - depletiontime
+
+
+
+
+2016-12-06
+Bij het direct casten van het DNA gebeurt er geen zak omdat evolutie te langzaam effect heeft. Na vele iteraties zijn er waarden tussen -8 en +4.
+Nieuwe idee is om het DNA eerst keer 10 te doen.
+Maar eerst ga ik er voor zorgen dat 'ie instellingen kan lezen.
+
+
+Shit die uit settings moet komen:
+SimpleShellsAgentWorldModel._depletionTimeFactor
+SimpleShellsControlArchitecture._chargedBatteryLevel
+SimpleShellsControlArchitecture._fixedChargingTime
+
+
+
+
+2016-12-14
+I'm just ignoring gSelectionPressure
+
+
+
+created by and mutating the parent weights using
+gaussian perturbation with a single, fixed mutation step size
+σ = 1. This sin
+
+experiments
+# geval zonder batterij
+
+Fixed settings:
+# Effectively multiplying the standard deviation of the mutation Gaussian by 10
+gDepletionTimeFactor = 10 % 10 or 5% of the lifetime of the robot
+puckcolors = 1
+gMaxLifetimeGathering = 2000
+gMaxLifetimeMating = 200
+
+
+# Total time standing charging in ideal case should be the same in all cases
+# totalWaste = an eighth of the gMaxLifetimeGathering
+
+gather / battery = gather / (perc * gather) = 1 / perc
+
+gather / (BatteryLevel + ChargingTime) * ChargingTime = totalWaste
+gather * ChargingTime = totalWaste * (BatteryLevel + ChargingTime)
+gather * ChargingTime = totalWaste * BatteryLevel + totalWaste * ChargingTime
+gather * ChargingTime - totalWaste * ChargingTime = totalWaste * BatteryLevel
+(gather - totalWaste) * ChargingTime = totalWaste * BatteryLevel
+ChargingTime = totalWaste * BatteryLevel / (gather - totalWaste)
+ChargingTime = chargeFact * batteryFact * gather ^ 2 / (gather - chargeFact * gather)
+ChargingTime = chargeFact * batteryFact * gather / (1 - chargeFact)
+
+Changing settings:
+# 10%   20%      50%    100%  of life time
+# 200   400     1000    2000
+gChargedBatteryLevel = 500
+#  29    57      143     286
+gFixedChargingTime = 300
