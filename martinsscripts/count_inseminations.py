@@ -79,5 +79,8 @@ def save_result(result, filename, bin_size):
 
 if __name__ == '__main__':
     from sys import argv
-    result = insems_many_files(argv[1:], ITERATIONS, BIN_SIZE)
-    save_result(result, OUTPUT_FILE, BIN_SIZE)
+    output_file = argv[1]
+    iterations = int(argv[2])
+    bin_size = int(argv[3])
+    result = insems_many_files(argv[4:], iterations, bin_size)
+    save_result(result, output_file, bin_size)
