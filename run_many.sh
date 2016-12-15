@@ -10,13 +10,14 @@ for run in {10..16}; do
             SKIP=$((SKIP-1))
             continue
         fi
-        for (( i = 0; i < $PARALLEL; i++ )); do
-            echo "Starting run $run $description"
-            gnome-terminal --working-directory=$(pwd) -e "../run_once.sh $run $description"
-        done
-        echo "Waiting $WAIT_TIME seconds"
-        sleep $WAIT_TIME
+        echo "Starting run $run $description"
         gnome-terminal --working-directory=$(pwd) -e "../run_once.sh $run $description"
+        parallel=$((parallel-1))
+        if [[ parallel -eq 0 ]]; then
+            parallel=$PARALLEL
+            echo "Waiting $WAIT_TIME seconds"
+            sleep $WAIT_TIME
+        fi
     done
 done
 
