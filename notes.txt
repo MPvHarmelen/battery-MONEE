@@ -157,3 +157,9 @@ definition of a population is not entirely straightforward. In
 this case, we define a population as all the controllers that ran
 to completion within a certain timeframe (intervals of 5000
 time steps)
+
+
+TODO dingen:
+ - runs die nog vet veel langer zijn om te kijken wat er met 2000 gebeurt
+ - runs waarbij depletion time 0 is ofzo, zodat ze gewoon wel gaan lopen maakt niet uit wat er gebeurt
+ -
