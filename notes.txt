@@ -160,6 +160,6 @@ time steps)
 
 
 TODO dingen:
- - runs die nog vet veel langer zijn om te kijken wat er met 2000 gebeurt
- - runs waarbij depletion time 0 is ofzo, zodat ze gewoon wel gaan lopen maakt niet uit wat er gebeurt
- -
+ - veel langere runs zijn om te kijken wat er met 2000 gebeurt
+ - extra geval met depletion time 0 is ofzo, zodat ze gewoon wel gaan lopen maakt niet uit wat er gebeurt
+ - depletion time uitreken rekeninghoudend met dat ze met een volle batterij beginnen
