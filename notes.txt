@@ -128,3 +128,32 @@ Welke iteratie het is staat hier in de depletion logs:
 [descendant] 98725 5101 5205
              ^^^^^
              hier
+
+
+Hoeveel nakomelingen een stuk DNA heeft weet je door te kijken hoe vaak het op de volgende plek voor komt:
+
+EggHatched: (1726; 175.643; 611.569); [(..)]; Winner: 159
+                                                      ^^^
+                                                      hier
+
+Het aantal pucks dat verzamelt is, staat hier (met bijbehorend ID van genoom):
+EggHatched: (1726; 175.643; 611.569); [[0, 0.25, 137], [0, 1.75, 159]]; (...)
+                                                        ^        ^^^
+                                                        hier     ID
+
+De iteratie van een hatch staat hier:
+EggHatched: (1726; 175.643; 611.569); [(..)]; Winner: 159
+             ^^^^
+             hier
+
+De iteratie van een puckcollection staat hier:
+PuckTaken: (747495;0;256;510)
+            ^^^^^^
+            hier
+
+
+Because the robots change controllers asynchronously, the
+definition of a population is not entirely straightforward. In
+this case, we define a population as all the controllers that ran
+to completion within a certain timeframe (intervals of 5000
+time steps)
