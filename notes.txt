@@ -103,3 +103,28 @@ Changing settings:
 gChargedBatteryLevel = 500
 #  29    57      143     286
 gFixedChargingTime = 300
+
+
+
+2016-12-15
+Data die we nodig hebben
+inseminations
+#pucks collected
+
+
+
+
+2016-12-16
+Ik wil weten:
+#descendants | depletion time
+Dus ik moet eerst per robot weten hoeveel descendants die had en wat z'n depletion time was.
+
+2016-12-18
+En dus ook #descendants | pucks
+Dus ik wil weten:
+per robot hoeveel descendants die had, wat z'n depletion time was EN hoeveel pucks 'ie heeft verzameld
+Welke iteratie het is staat hier in de depletion logs:
+
+[descendant] 98725 5101 5205
+             ^^^^^
+             hier
