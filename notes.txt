@@ -163,3 +163,16 @@ TODO dingen:
  - veel langere runs zijn om te kijken wat er met 2000 gebeurt
  - extra geval met depletion time 0 is ofzo, zodat ze gewoon wel gaan lopen maakt niet uit wat er gebeurt
  - depletion time uitreken rekeninghoudend met dat ze met een volle batterij beginnen
+
+
+2017-01-02
+
+Iteration, id of the winning genome of this egg, number of pucks collected,
+[gathered] 692248 35579 4 791.7
+           ^^^^^^ ^^^^^ ^
+           itera. WinID N
+
+Iteration, id of the winning genome of this egg, id of the new genome?
+[descendant] 692248 35579 35670
+             ^^^^^^ ^^^^^ ^^^^^
+             itera. WinID NewID
