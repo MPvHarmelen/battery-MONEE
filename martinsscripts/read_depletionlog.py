@@ -1,6 +1,6 @@
 import re
 
-IGNORE_ITERATION = 0
+NO_DEP_ITERATION = 0
 INIT_ITERATION = 1
 GATHERED_RE = re.compile(r'\[gathered\] (?P<iteration>\d+) (?P<prev_id>-?\d+) (?P<n_pucks>-?(\d+|nan)) ?(?P<distance>\d+\.\d+)?$')
 DESCENDANT_RE = re.compile(r'\[descendant\] (?P<iteration>\d+) (?P<win_id>\d+) (?P<new_id>\d+)$')
@@ -44,30 +44,35 @@ def eggs(input_list):
             break
         dedic = DESCENDANT_RE.match(next(iterator)).groupdict()
         assert dedic['iteration'] == gadic['iteration']
-
         iteration = int(dedic['iteration'])
-        if iteration > INIT_ITERATION:
-            # Save died data
-            output[int(gadic['prev_id'])] += [
+
+        # Entries before NO_DEP_ITERATION don't print depletion time
+        dep_time = None
+        if iteration > NO_DEP_ITERATION:
+            dep_time = int(DEPLETION_RE.match(next(iterator)).groups()[0])
+
+        # Save new data
+        output[int(dedic['new_id'])] = [
+            iteration,
+            dep_time,
+            0
+        ]
+
+        # Save died data
+        prev_id = int(gadic['prev_id'])
+        if -1 < prev_id < len(output):
+            output[prev_id] += [
                 int(gadic['n_pucks']),
-                float(gadic['distance'])
+                float(gadic['distance'] or 0)
             ]
 
+        # Entries before INIT_ITERATION don't have existing ancestors
+        if iteration > INIT_ITERATION:
             # Save winner
             win_id = int(dedic['win_id'])
             if win_id < len(output):
                 output[win_id][2] += 1
 
-        # Save new data
-        dep_time = None
-        # Entries before IGNORE_ITERATION don't print depletion time
-        if iteration > IGNORE_ITERATION:
-            dep_time = int(DEPLETION_RE.match(next(iterator)).groups()[0])
-        output[int(dedic['new_id'])] = [
-            int(iteration),
-            dep_time,
-            0
-        ]
     return output
 
 
