@@ -38,9 +38,9 @@ def parse(input_list):
     """
     Parse a list of lines
     output a list:
-    id >>> [iteration, depletiontime, n_descendants, n_pucks, distance]
+    id >>> [iteration, depletion_time, n_wins, n_pucks, distance]
     or
-    id >>> [iteration, depletiontime, n_descendants]
+    id >>> [iteration, depletion_time, n_wins]
 
     and the highest iteration
     """
@@ -69,32 +69,29 @@ def parse(input_list):
             dep_time = int(DEPLETION_RE.match(next(iterator)).groups()[0])
 
         # Save new data
-        output[int(dedic['new_id'])] = [
-            iteration,
-            dep_time,
-            0
-        ]
+        output[int(dedic['new_id'])] = {
+            'iteration': iteration,
+            'depletion_time': dep_time,
+            'n_wins': 0
+        }
 
         # Save died data
         prev_id = int(gadic['prev_id'])
         if -1 < prev_id < len(output):
-            output[prev_id] += [
-                int(gadic['n_pucks']),
-                float(gadic['distance'] or 0)
-            ]
+            output[prev_id].update(
+                n_pucks=int(gadic['n_pucks']),
+                distance=float(gadic['distance'] or 0)
+            )
 
         # Entries before INIT_ITERATION don't have existing ancestors
         if iteration > INIT_ITERATION:
             # Save winner
             win_id = int(dedic['win_id'])
             if win_id < len(output):
-                output[win_id][2] += 1
+                output[win_id]['n_wins'] += 1
 
-    return output, iteration
-
-
-def clean_parsed(parsed):
-    return [l for l in parsed if l[1] is not None]
+    # return output, iteration
+    return output
 
 
 def fishers_test(square):
@@ -112,26 +109,27 @@ def fishers_test(square):
 # def bin_data(data):
 #     ...
 #     # bin size
-def binned_insems_in_iterable(iterable, bin_size):
+def bin_iterable(iterable, bin_size, bin_key):
     """
     We can misuse the fact the items for in the bins are in order
     """
     result = []
     current_bin, current_total = 0, []
     for line in iterable:
-        if line[0] // bin_size == current_bin:
-            current_total.append(line[1:])
+        bin_thing = line[bin_key]
+        if bin_thing // bin_size == current_bin:
+            current_total.append(line)
         else:
             result.append((current_bin * bin_size, current_total))
-            while line[0] // bin_size > current_bin:
+            while bin_thing // bin_size > current_bin:
                 current_bin += 1
-            if line[0] // bin_size != current_bin:
+            if bin_thing // bin_size != current_bin:
                 raise ValueError("Bins? it: {}, bin: {}".format(
-                    line[0], current_bin
+                    bin_thing, current_bin
                 ))
-            current_total = [line[1:]]
+            current_total = [line]
     result.append((current_bin * bin_size, current_total))
-    return defaultdict(lambda: [], result)
+    return defaultdict(list, result)
 
 
 def fisher_on_bins(bin_dict, *args, **kwargs):
@@ -188,17 +186,58 @@ def classify_data(data, first_index, second_index, first_cutoff=None,
     #  - More than 0 offspring or 0 offspring
 
 
+def clean_parsed(parsed, check_filled):
+    return [
+        l for l in parsed
+        if check_filled in l and l[check_filled] is not None
+    ]
+
+
+def combined_parse_clean_bins(filenames, bin_size, bin_thing, clean_keys=None):
+    clean_keys = clean_keys if clean_keys is not None else []
+    total_bins = defaultdict(list)
+    for file in filenames:
+        print("Processing {}".format(file))
+        with open(file) as file:
+            try:
+                all_dna = parse(file.readlines())
+            except AttributeError:
+                    raise ValueError("Corrupt file: {}".format(file))
+        for key in clean_keys:
+            all_dna = clean_parsed(all_dna, key)
+        bins = bin_iterable(all_dna, bin_size, bin_thing)
+        for binn, values in bins.items():
+            total_bins[binn].extend(values)
+    return total_bins
+
+
 if __name__ == '__main__':
-    # id >>> [iteration, depletiontime, n_descendants, n_pucks, distance]
-    INFILE = '/home/martin/Documents/repos/battery-MONEE/RoboRobo/depletionLogs/level200seed123-run16.txt'
-    with open(INFILE) as file:
-        all_dna, iteration = parse(file.readlines())
-    all_dna = clean_parsed(all_dna)
-    print(iteration)
-    binned = binned_insems_in_iterable(all_dna, BIN_SIZE)
-    # for it, li in sorted(fisher_on_bins(binned, 1, -1, 1).items()):
+    import os
+    # id >>> [iteration, depletion_time, n_wins, n_pucks, distance]
+    INDIR = \
+        '/home/martin/Documents/repos/battery-MONEE/RoboRobo/depletionLogs/'
+    NAME_FILTER = lambda string: 'level200' in string and not '2000' in string \
+        and not 'run10' in string
+
+    filenames = [
+        os.path.join(INDIR, filename)
+        for filename in os.listdir(INDIR)
+        if NAME_FILTER(filename)
+    ]
+    # all_dna = clean_parsed(all_dna, 'depletion_time')
+    # all_dna = clean_parsed(all_dna, 'distance')
+    # print(iteration)
+    binned = combined_parse_clean_bins(
+        filenames,
+        BIN_SIZE,
+        'iteration',
+        ['n_wins', 'distance']
+    )
+    # # for it, li in sorted(fisher_on_bins(binned, 1, -1, 1).items()):
     for it, li in sorted(binned.items()):
-        square = classify_data(li, 1, -1, 1)
+        # if not li:
+        #     continue
+        square = classify_data(li, 'n_wins', 'distance')
         val = fishers_test(square)
         # if val < 10 ** (-3):
         print(it, square, val, math.log(val, 10))
