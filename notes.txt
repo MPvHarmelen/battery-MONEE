@@ -167,12 +167,58 @@ TODO dingen:
 
 2017-01-02
 
-Iteration, id of the winning genome of this egg, number of pucks collected,
+Iteration, id of the previous genome of this egg, number of pucks collected, distance travelled
 [gathered] 692248 35579 4 791.7
-           ^^^^^^ ^^^^^ ^
-           itera. WinID N
+           ^^^^^^ ^^^^^ ^ ^^^^^
+           itera. preID N distance
 
-Iteration, id of the winning genome of this egg, id of the new genome?
+Iteration, id of the winning genome of this egg, id of the new genome
 [descendant] 692248 35579 35670
              ^^^^^^ ^^^^^ ^^^^^
              itera. WinID NewID
+
+Save everything per id, in a list because it's faster.
+list[id] = [(depletion_time, )ndescendants, npucks]
+per robot hoeveel descendants die had, wat z'n depletion time was EN hoeveel pucks 'ie heeft verzameld EENNNN iets met iteratie
+
+depletion time: van [descendant]
+
+Algorithm:
+    for (new_id, dep_time, win_id, npucks) in depletion_log:
+        list[entry['id']] = [entry['depletion_time'], 0, 0]
+        temp = list[entry['winner_id']]
+        temp[1] += 1
+        temp[2] = entry['pucks_collected']
+
+2017-01-04
+Charing time (compensated for starting with a full battery):
+
+batteryFact * lifetime + ncharges * (batteryFact * lifetime + chargingTime) = lifetime
+wastedTime = chargeFact * lifetime = ncharges * chargingTime
+
+ncharges = chargeFact * lifetime / chargingTime
+
+batteryFact * lifetime + chargeFact * lifetime / chargingTime * (batteryFact * lifetime + chargingTime) = lifetime
+chargeFact * lifetime / chargingTime * (batteryFact * lifetime + chargingTime) = lifetime - batteryFact * lifetime
+chargeFact * lifetime / chargingTime * (batteryFact * lifetime + chargingTime) = (1 - batteryFact) * lifetime
+(batteryFact * lifetime + chargingTime) / chargingTime = (1 - batteryFact) * lifetime / chargeFact / lifetime
+(batteryFact * lifetime + chargingTime) / chargingTime = (1 - batteryFact) / chargeFact
+batteryFact * lifetime / chargingTime + chargingTime / chargingTime = (1 - batteryFact) / chargeFact
+batteryFact * lifetime / chargingTime + 1 = (1 - batteryFact) / chargeFact
+batteryFact * lifetime / chargingTime = (1 - batteryFact) / chargeFact - 1
+chargingTime = batteryFact * lifetime / ((1 - batteryFact) / chargeFact - 1)
+
+
+
+
+Algoritme was niet helemaal goed, iteration miste ergens.
+Algorithm:
+    initialize(list)
+    for (new_id, iteration, dep_time, win_id, npucks) in depletion_log:
+        list[new_id] = [iteration, dep_time, 0, 0]
+        list[winner_id][2] += 1
+        # Nope! temp[3] = entry['pucks_collected']
+
+
+2017-01-05
+Voor Fishers test moet je combined individuals gebruiken
