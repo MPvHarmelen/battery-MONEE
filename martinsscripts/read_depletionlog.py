@@ -1,3 +1,13 @@
+"""
+Author: Martin van Harmelen <Martin@vanharmelen.com>
+
+This file reads a text file consisting of the terminal output of RoboRobo and
+writes a number of files:
+ - depletion time per bin
+ - Something with fishers test (to-do)
+ - number inseminations per bin (to-do)
+"""
+
 import re
 
 NO_DEP_ITERATION = 0
