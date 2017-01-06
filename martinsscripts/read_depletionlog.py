@@ -4,8 +4,8 @@ Author: Martin van Harmelen <Martin@vanharmelen.com>
 This file reads a text file consisting of the terminal output of RoboRobo and
 writes a number of files:
  - depletion time per bin
- - Something with fishers test (to-do)
- - number inseminations per bin (to-do)
+ - Something with fishers test (done)
+ - number inseminations per bin (impossible)
 """
 
 import re
@@ -94,18 +94,6 @@ def parse(input_list):
     return output
 
 
-def fishers_test(square):
-    """Calculate Fisher's exact test"""
-    a = square[0][0]
-    b = square[0][1]
-    c = square[1][0]
-    d = square[1][1]
-
-    f = math.factorial
-    return (f(a + b) * f(c + d) * f(a + c) * f(b + d)) / \
-        (f(a) * f(b) * f(c) * f(d) * f(a + b + c + d))
-
-
 # def bin_data(data):
 #     ...
 #     # bin size
@@ -130,13 +118,6 @@ def bin_iterable(iterable, bin_size, bin_key):
             current_total = [line]
     result.append((current_bin * bin_size, current_total))
     return defaultdict(list, result)
-
-
-def fisher_on_bins(bin_dict, *args, **kwargs):
-    return {
-        binn: fishers_test(classify_data(values, *args, **kwargs))
-        for binn, values in bin_dict.items()
-    }
 
 
 def quartiles(list):
@@ -186,6 +167,25 @@ def classify_data(data, first_index, second_index, first_cutoff=None,
     #  - More than 0 offspring or 0 offspring
 
 
+def fishers_test(square):
+    """Calculate Fisher's exact test"""
+    a = square[0][0]
+    b = square[0][1]
+    c = square[1][0]
+    d = square[1][1]
+
+    f = math.factorial
+    return (f(a + b) * f(c + d) * f(a + c) * f(b + d)) / \
+        (f(a) * f(b) * f(c) * f(d) * f(a + b + c + d))
+
+
+def fisher_on_bins(bin_dict, *args, **kwargs):
+    return {
+        binn: fishers_test(classify_data(values, *args, **kwargs))
+        for binn, values in bin_dict.items()
+    }
+
+
 def clean_parsed(parsed, check_filled):
     return [
         l for l in parsed
@@ -198,9 +198,9 @@ def combined_parse_clean_bins(filenames, bin_size, bin_thing, clean_keys=None):
     total_bins = defaultdict(list)
     for file in filenames:
         print("Processing {}".format(file))
-        with open(file) as file:
+        with open(file) as fd:
             try:
-                all_dna = parse(file.readlines())
+                all_dna = parse(fd.readlines())
             except AttributeError:
                     raise ValueError("Corrupt file: {}".format(file))
         for key in clean_keys:
@@ -211,6 +211,17 @@ def combined_parse_clean_bins(filenames, bin_size, bin_thing, clean_keys=None):
     return total_bins
 
 
+def output_defaultdict(data, bin_size, filename):
+    maxi = max(data) + bin_size
+    ljust = len(str(maxi))
+    ljust += 4 - (ljust % 4) if ljust % 4 else 4
+    with open(filename, 'w') as fd:
+        fd.writelines(
+            "{}{}\n".format(str(i).ljust(ljust), data[i])
+            for i in range(0, maxi, bin_size)
+        )
+
+
 if __name__ == '__main__':
     import os
     # id >>> [iteration, depletion_time, n_wins, n_pucks, distance]
@@ -219,29 +230,38 @@ if __name__ == '__main__':
     NAME_FILTER = lambda string: 'level200' in string and not '2000' in string \
         and not 'run10' in string
 
+
+    OUTFILE = 'outfile.txt'
+
     filenames = [
         os.path.join(INDIR, filename)
         for filename in os.listdir(INDIR)
         if NAME_FILTER(filename)
     ]
+
+
+
+    clean_things = ['n_wins', 'distance']
     # all_dna = clean_parsed(all_dna, 'depletion_time')
     # all_dna = clean_parsed(all_dna, 'distance')
-    # print(iteration)
+    # # print(iteration)
     binned = combined_parse_clean_bins(
         filenames,
         BIN_SIZE,
         'iteration',
-        ['n_wins', 'distance']
+        clean_things
     )
-    # # for it, li in sorted(fisher_on_bins(binned, 1, -1, 1).items()):
-    for it, li in sorted(binned.items()):
-        # if not li:
-        #     continue
-        square = classify_data(li, 'n_wins', 'distance')
-        val = fishers_test(square)
-        # if val < 10 ** (-3):
-        print(it, square, val, math.log(val, 10))
-        # print(li)
+
+    output_defaultdict(fisher_on_bins(binned, *clean_things, 1), BIN_SIZE, OUTFILE)
+    # # # for it, li in sorted(fisher_on_bins(binned, 1, -1, 1).items()):
+    # for it, li in sorted(binned.items()):
+    #     # if not li:
+    #     #     continue
+    #     square = classify_data(li, 'n_wins', 'distance')
+    #     val = fishers_test(square)
+    #     # if val < 10 ** (-3):
+    #     print(it, square, val, math.log(val, 10))
+    #     # print(li)
     # for egg in clean_parsed(all_dna):
     #     if egg[1] is None:
     #         print(egg)
