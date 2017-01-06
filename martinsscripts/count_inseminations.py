@@ -3,6 +3,13 @@ import re
 import math
 from collections import defaultdict
 
+
+USAGE="""
+Usage:
+{} output_file iterations bin_size input_file [input_file ...]
+
+"""
+
 ITERATIONS = 1000000
 BIN_SIZE = 1000
 OUTPUT_FILE = 'inseminations'
@@ -78,7 +85,15 @@ def save_result(result, filename, bin_size):
 
 
 if __name__ == '__main__':
-    from sys import argv
+    from sys import argv, exit
+    if len(argv) < 5:
+        print(USAGE)
+        exit(1)
+    for arg in argv:
+        if re.search(r'\bh(elp)?\b'):
+            print(USAGE)
+        exit()
+
     output_file = argv[1]
     iterations = int(argv[2])
     bin_size = int(argv[3])
