@@ -181,7 +181,7 @@ def fishers_test(square):
 
 def fisher_on_bins(bin_dict, *args, **kwargs):
     return {
-        binn: fishers_test(classify_data(values, *args, **kwargs))
+        binn: [fishers_test(classify_data(values, *args, **kwargs))]
         for binn, values in bin_dict.items()
     }
 
@@ -211,13 +211,27 @@ def combined_parse_clean_bins(filenames, bin_size, bin_thing, clean_keys=None):
     return total_bins
 
 
-def output_defaultdict(data, bin_size, filename):
-    maxi = max(data) + bin_size
-    ljust = len(str(maxi))
-    ljust += 4 - (ljust % 4) if ljust % 4 else 4
+def output_defaultdict(data, bin_size, filename, tab_size=4):
+
+    ranel = random.choice(list(data.values()))
+    maxes = [max(data) + bin_size] + [
+        max(d[i] for d in data.values()) for i in range(len(ranel))
+    ]
+    maxi = maxes[0]
+
+    ljusts = [len(str(m)) for m in maxes]
+    ljusts = [ljust + tab_size - (ljust % tab_size) for ljust in ljusts]
+
     with open(filename, 'w') as fd:
         fd.writelines(
-            "{}{}\n".format(str(i).ljust(ljust), data[i])
+            "{}{}{}\n".format(
+                str(i).ljust(ljusts[0]),
+                ''.join(
+                    str(d).ljust(ljusts[k + 1])
+                    for k, d in enumerate(data[i][:-1])
+                ),
+                data[i][-1]
+            )
             for i in range(0, maxi, bin_size)
         )
 
