@@ -10,6 +10,7 @@ writes a number of files:
 
 import re
 import math
+import random
 from collections import defaultdict
 
 BIN_SIZE = 5000
