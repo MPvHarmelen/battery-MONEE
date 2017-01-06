@@ -120,8 +120,8 @@ def bin_iterable(iterable, bin_size, bin_key):
     return defaultdict(list, result)
 
 
-def quartiles(list):
-    ...
+def quartiles(li):
+    """Calculate the three quartile numbers"""
     # From: http://www.wikiwand.com/en/Quartile#Method_3
     # Method 3
 
@@ -139,6 +139,27 @@ def quartiles(list):
     # This always gives the arithmetic mean of Methods 1 and 2; it ensures that
     # the median value is given its correct weight, and thus quartile values
     # change as smoothly as possible as additional data points are added.
+    li = sorted(li)
+    lenl = len(li)
+    if lenl % 2 == 0:
+        return [
+            median(li[:lenl // 2]),
+            median(li),
+            median(li[lenl // 2:])
+        ]
+    else:
+        div = lenl // 4
+        rem = lenl % 4
+        return [
+            (
+                rem * li[div - (rem % 3)] + (4 - rem) * li[div + 1 - (rem % 3)]
+            ) / 4,
+            median(li),
+            (
+                (4 - rem) * li[3 * div + 1 - (rem % 3)]
+                + rem * li[3 * div + 2 - (rem % 3)]
+            ) / 4
+        ]
 
 
 def median(list_in):
