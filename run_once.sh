@@ -1,4 +1,6 @@
-RUN=$1
-DESCRIPTION=$2
+prop_file=$1
+output_file=$2
+# run=$1
+# description=$2
 
-./roborobo -l properties/run$RUN/Battery.$DESCRIPTION.properties > depletionLogs/$DESCRIPTION-run$RUN.txt
+./roborobo -l $prop_file > $output_file
