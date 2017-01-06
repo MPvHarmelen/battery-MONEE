@@ -3,8 +3,9 @@ import re
 import math
 from collections import defaultdict
 
+from read_depletionlog import quartiles
 
-USAGE="""
+USAGE = """
 Usage:
 {} output_file iterations bin_size input_file [input_file ...]
 
@@ -84,18 +85,27 @@ def save_result(result, filename, bin_size):
         )
 
 
+def all_quartiles(data):
+    """
+    Return lower quartile, median and upper quartile for given column per bin
+    """
+    return [quartiles(binn) for binn in data]
+
+
 if __name__ == '__main__':
     from sys import argv, exit
     if len(argv) < 5:
-        print(USAGE)
+        print(USAGE.format(argv[0]))
         exit(1)
     for arg in argv:
-        if re.search(r'\bh(elp)?\b'):
-            print(USAGE)
-        exit()
+        if re.search(r'\bh(elp)?\b', arg):
+            print(USAGE.format(argv[0]))
+            exit()
 
     output_file = argv[1]
     iterations = int(argv[2])
     bin_size = int(argv[3])
     result = insems_many_files(argv[4:], iterations, bin_size)
     save_result(result, output_file, bin_size)
+    # quarts = all_quartiles(result)
+    # save_result(quarts, output_file, bin_size)

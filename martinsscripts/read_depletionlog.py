@@ -1,9 +1,10 @@
+#! /usr/bin/env python3
 """
 Author: Martin van Harmelen <Martin@vanharmelen.com>
 
 This file reads a text file consisting of the terminal output of RoboRobo and
 writes a number of files:
- - depletion time per bin
+ - depletion time per bin (done)
  - Something with fishers test (done)
  - number inseminations per bin (impossible)
 """
@@ -13,13 +14,24 @@ import math
 import random
 from collections import defaultdict
 
-BIN_SIZE = 5000
-
+CHOICES = [
+    'iteration',
+    'depletion_time',
+    'n_wins',
+    'n_pucks',
+    'distance',
+]
 
 NO_DEP_ITERATION = 0
 INIT_ITERATION = 1
-GATHERED_RE = re.compile(r'\[gathered\] (?P<iteration>\d+) (?P<prev_id>-?\d+) (?P<n_pucks>-?(\d+|nan)) ?(?P<distance>\d+\.\d+)?$')
-DESCENDANT_RE = re.compile(r'\[descendant\] (?P<iteration>\d+) (?P<win_id>\d+) (?P<new_id>\d+)$')
+GATHERED_RE = re.compile(
+    r'\[gathered\] (?P<iteration>\d+) (?P<prev_id>-?\d+) '
+    r'(?P<n_pucks>-?(\d+|nan)) ?(?P<distance>\d+\.\d+)?$'
+)
+DESCENDANT_RE = re.compile(
+    r'\[descendant\] (?P<iteration>\d+) '
+    r'(?P<win_id>\d+) (?P<new_id>\d+)$'
+)
 DEPLETION_RE = re.compile(r'Depletion time: (-?\d+)$')
 
 # def get_dep_time(string):
@@ -46,18 +58,26 @@ def parse(input_list):
     and the highest iteration
     """
     # Create a list with enough space for all ids by using the last id
-    output = [None] * (1 + int(first_match(
+    highest_match = first_match(
         reversed(input_list), DESCENDANT_RE
-    ).groupdict()['new_id']))
+    )
+    highest_id = int(highest_match.groupdict()['new_id'])
+    output = [None] * (1 + highest_id)
 
     # Iterate over all lines
     # Finds the first line to match GATHERED_RE or stops at StopIteration, then
     # forces the next two lines to match DESCENDANT_RE and DEPLETION_RE
     # respectively.
+    gatherrema = GATHERED_RE.match
     iterator = iter(input_list)
     while True:
         try:
-            gadic = first_match(iterator, GATHERED_RE).groupdict()
+            # Inlined first_match
+            match = gatherrema(next(iterator))
+            while match is None:
+                match = gatherrema(next(iterator))
+
+            gadic = match.groupdict()
         except StopIteration:
             break
         dedic = DESCENDANT_RE.match(next(iterator)).groupdict()
@@ -67,7 +87,10 @@ def parse(input_list):
         # Entries before NO_DEP_ITERATION don't print depletion time
         dep_time = None
         if iteration > NO_DEP_ITERATION:
-            dep_time = int(DEPLETION_RE.match(next(iterator)).groups()[0])
+            line = ''
+            while not line:
+                line = next(iterator).strip()
+            dep_time = int(DEPLETION_RE.match(line).groups()[0])
 
         # Save new data
         output[int(dedic['new_id'])] = {
@@ -225,6 +248,12 @@ def combined_parse_clean_bins(filenames, bin_size, bin_thing, clean_keys=None):
                 all_dna = parse(fd.readlines())
             except AttributeError:
                     raise ValueError("Corrupt file: {}".format(file))
+            except StopIteration:
+                    raise ValueError("Corrupt file: {}".format(file))
+            except IndexError:
+                    raise ValueError(
+                        "Corrupt file, new_ids not sorted: {}".format(file)
+                    )
         for key in clean_keys:
             all_dna = clean_parsed(all_dna, key)
         bins = bin_iterable(all_dna, bin_size, bin_thing)
@@ -233,7 +262,7 @@ def combined_parse_clean_bins(filenames, bin_size, bin_thing, clean_keys=None):
     return total_bins
 
 
-def output_defaultdict(data, bin_size, filename, tab_size=4):
+def output_dict(data, bin_size, filename, tab_size=4):
 
     ranel = random.choice(list(data.values()))
     maxes = [max(data) + bin_size] + [
@@ -258,54 +287,49 @@ def output_defaultdict(data, bin_size, filename, tab_size=4):
         )
 
 
+def column_quartiles(data, column):
+    """
+    Return lower quartile, median and upper quartile for given column per bin
+    """
+    return {
+        key: quartiles(item[column] for item in binn)
+        for key, binn in data.items()
+    }
+
+
 if __name__ == '__main__':
-    import os
-    # id >>> [iteration, depletion_time, n_wins, n_pucks, distance]
-    INDIR = \
-        '/home/martin/Documents/repos/battery-MONEE/RoboRobo/depletionLogs/'
-    NAME_FILTER = lambda string: 'level200' in string and not '2000' in string \
-        and not 'run10' in string
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('-b', '--bin_by', default=CHOICES[0], choices=CHOICES)
+    parser.add_argument('-q', '--quartiles', nargs='+', choices=CHOICES,
+                        default=[])
+    parser.add_argument('-f', '--fisher', nargs='+', choices=CHOICES,
+                        default=[],
+                        help="Do Fisher's exact test with n_wins")
+    parser.add_argument('output_basename')
+    parser.add_argument('bin_size', type=int)
+    parser.add_argument('input_file', nargs='+')
+    args = parser.parse_args()
 
-
-    OUTFILE = 'outfile.txt'
-
-    filenames = [
-        os.path.join(INDIR, filename)
-        for filename in os.listdir(INDIR)
-        if NAME_FILTER(filename)
-    ]
-
-
-
-    clean_things = ['n_wins', 'distance']
-    # all_dna = clean_parsed(all_dna, 'depletion_time')
-    # all_dna = clean_parsed(all_dna, 'distance')
-    # # print(iteration)
     binned = combined_parse_clean_bins(
-        filenames,
-        BIN_SIZE,
-        'iteration',
-        clean_things
+        args.input_file,
+        args.bin_size,
+        args.bin_by,
+        args.quartiles + args.fisher
     )
 
-    output_defaultdict(fisher_on_bins(binned, *clean_things, 1), BIN_SIZE, OUTFILE)
-    # # # for it, li in sorted(fisher_on_bins(binned, 1, -1, 1).items()):
-    # for it, li in sorted(binned.items()):
-    #     # if not li:
-    #     #     continue
-    #     square = classify_data(li, 'n_wins', 'distance')
-    #     val = fishers_test(square)
-    #     # if val < 10 ** (-3):
-    #     print(it, square, val, math.log(val, 10))
-    #     # print(li)
-    # for egg in clean_parsed(all_dna):
-    #     if egg[1] is None:
-    #         print(egg)
-    # print(len(all_dna))
-    # print(len([x for x in all_dna if len(x) > 3]))
-    # print()
-    # print(len([x for x in all_dna if x[2] > 0]))
-    # print(len([x for x in all_dna if x[2] > 1]))
-    # print(len([x for x in all_dna if x[2] > 2]))
-    # print(len([x for x in all_dna if x[2] > 3]))
-    # print(len([x for x in all_dna if x[2] > 4]))
+    for column in args.fisher:
+        print("Calculating Fisher's exact test for {}".format(column))
+        output_dict(
+            fisher_on_bins(binned, 'n_wins', column, 1),
+            args.bin_size,
+            args.output_basename + '.{}.fisher'.format(column)
+        )
+
+    for column in args.quartiles:
+        print("Calculating quartiles for {}".format(column))
+        output_dict(
+            column_quartiles(binned, column),
+            args.bin_size,
+            args.output_basename + '.{}.quartiles'.format(column)
+        )
