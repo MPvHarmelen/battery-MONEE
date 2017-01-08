@@ -5,8 +5,8 @@ Author: Martin van Harmelen <Martin@vanharmelen.com>
 This file reads a text file consisting of the terminal output of RoboRobo and
 writes a number of files:
  - depletion time per bin (done)
- - Something with fishers test (done)
- - number inseminations per bin (impossible)
+ - something with fishers test (done)
+ - number of inseminations per bin (impossible)
 """
 
 import re
@@ -33,9 +33,6 @@ DESCENDANT_RE = re.compile(
     r'(?P<win_id>\d+) (?P<new_id>\d+)$'
 )
 DEPLETION_RE = re.compile(r'Depletion time: (-?\d+)$')
-
-# def get_dep_time(string):
-#     return int(string[16:])
 
 
 def first_match(iterator, regex):
@@ -118,9 +115,6 @@ def parse(input_list):
     return output
 
 
-# def bin_data(data):
-#     ...
-#     # bin size
 def bin_iterable(iterable, bin_size, bin_key):
     """
     We can misuse the fact the items for in the bins are in order
