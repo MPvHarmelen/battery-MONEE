@@ -16,7 +16,7 @@ def insems_in_line(line, insems=0, iteration=None):
     match = INSEM_EXP.match(line)
     if match is not None:
         iteration = int(match.group(1))
-        insems = match.group(2).count('[')
+        insems = match.group(2).count('[') - 1
     return (iteration, insems) if iteration else None
 
 
